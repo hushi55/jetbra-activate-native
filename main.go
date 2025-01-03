@@ -36,7 +36,6 @@ var defaultColor = "%s"
 var lang, _ = getLocale()
 var deviceID = getMacMD5_241018()
 var machineID = getMacMD5_241019()
-var client = Client{Hosts: hosts}
 
 //go:embed all:script
 var scriptFS embed.FS
@@ -85,7 +84,6 @@ func main() {
 	}
 
 	fmt.Printf(green, tr.Tr("IntelliJ 授权")+` v`+strings.Join(strings.Split(fmt.Sprint(version), ""), "."))
-	client.SetProxy(lang)
 	fmt.Println()
 
 	fmt.Printf(defaultColor, tr.Tr("选择要授权的产品："))
@@ -96,8 +94,8 @@ func main() {
 	}
 	fmt.Println()
 	fmt.Print(tr.Tr("请输入产品编号（直接回车默认为1）："))
-	productIndex := 4
-	//_, _ = fmt.Scanln(&productIndex)
+	productIndex := 1
+	_, _ = fmt.Scanln(&productIndex)
 	if productIndex < 1 || productIndex > len(jbProduct) {
 		fmt.Println(tr.Tr("输入有误"))
 		return
@@ -105,10 +103,6 @@ func main() {
 	fmt.Println(tr.Tr("选择的产品为：") + jbProduct[productIndex-1])
 	fmt.Println()
 
-	// 到期了
-	periodIndex := 2
-
-	lic := ""
 	for i := 0; i < 50; i++ {
 		if i == 20 {
 			Clean()
@@ -121,12 +115,14 @@ func main() {
 	fmt.Println()
 	fmt.Println()
 
-	isOk, result := client.GetLic(jbProductChoice[productIndex-1], periodIndex-1)
-	if !isOk {
-		fmt.Printf(red, result)
+	licenseName := GetLicenseName()
+	expireDate := "2099-09-14"
+
+	lic, err := cryptoUtil.GenActivateCode(licenseName, expireDate, JetProducts[productIndex-1])
+	if err != nil {
+		fmt.Println(tr.Tr("签名工具生成激活码失败"))
 		return
 	}
-	lic = result
 
 	isCopyText := ""
 	err = clipboard.WriteAll(lic)
@@ -147,7 +143,7 @@ func main() {
 	fmt.Println()
 	fmt.Printf(hGreen, lic)
 	fmt.Println()
-	for i := 0; i < 4; i++ {
+	for i := 0; i < 1; i++ {
 		_, _ = fmt.Scanln()
 	}
 }
@@ -299,49 +295,6 @@ func getMacMD5_241019() string {
 	id = strings.ToLower(id)
 	id = strings.ReplaceAll(id, "-", "")
 	return id
-}
-
-func printAD() {
-	ad := client.GetAD()
-	if len(ad) == 0 {
-		return
-	}
-	fmt.Printf(yellow, ad)
-}
-
-func checkUpdate(version int) {
-	upUrl := client.CheckVersion(fmt.Sprint(version))
-	if upUrl == "" {
-		return
-	}
-	isCopyText := ""
-	installCmd := `bash -c "$(curl -fsSLk ` + githubPath + `install.sh)"`
-	errClip := clipboard.WriteAll(installCmd)
-	if errClip == nil {
-		isCopyText = tr.Tr("（已复制到剪贴板）")
-	}
-	switch runtime.GOOS {
-	case "windows":
-		fmt.Printf(red, tr.Tr("有新版本，请关闭本窗口，将下面命令粘贴到GitBash窗口执行")+isCopyText+`：`)
-	default:
-		fmt.Printf(red, tr.Tr("有新版本，请关闭本窗口，将下面命令粘贴到新终端窗口执行")+isCopyText+`：`)
-	}
-	fmt.Printf(hGreen, installCmd)
-	_, _ = fmt.Scanln()
-	os.Exit(0)
-	return
-}
-
-// 获取推广人
-func getPromotion() (promotion string) {
-	b, _ := os.ReadFile(os.Getenv("HOME") + "/.jetbrarc")
-	promotion = strings.TrimSpace(string(b))
-	if len(promotion) == 0 {
-		if len(os.Args) > 1 {
-			promotion = os.Args[1]
-		}
-	}
-	return
 }
 
 func getLocale() (langRes, locRes string) {

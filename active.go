@@ -67,6 +67,10 @@ func Active(software string) {
 		os.WriteFile(jetPath+"/active-agt.jar", jarFileData, 0644)
 		copyDir(scriptFS, plugins, jetPath+"/plugins")
 		copyDir(scriptFS, config, jetPath+"/config")
+
+		// 根据当前的证书生成power.conf
+		powerConfPath := jetPath + "/config/power.conf"
+		cryptoUtil.GenPowerConf(powerConfPath)
 	} else {
 		fmt.Printf(red, "active-agt.jar is missing, "+software+" crack failed!")
 		os.Exit(1)

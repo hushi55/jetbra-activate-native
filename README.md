@@ -9,7 +9,7 @@ Jetbra Active is a JetBrains IDE activation tool that helps you quickly activate
 Open the terminal on MacOS/Linux; Open Git Bash on Windows. Then execute the following command to install:
 
 ```shell
-go run github.com/youtzz/jetbra-activate@1.0 githubGoReadme;
+go run github.com/youtzz/jetbra-activate@latest;
 ```
 
 ---
