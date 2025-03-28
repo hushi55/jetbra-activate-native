@@ -78,7 +78,7 @@ func NewLicense(licenseName string, expireDate string, products ...Product) Lice
 }
 
 func randStr(n int) string {
-	const letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	const letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890"
 
 	b := make([]byte, n)
 	for i := range b {
